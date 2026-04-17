@@ -1,0 +1,34 @@
+# Build artifacts
+build/
+build-*/
+dist/
+wheelhouse/
+*.egg-info/
+*.so
+*.pyd
+*.dylib
+*.dll
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# uv / virtualenv
+.venv/
+.python-version
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
