@@ -1,17 +1,20 @@
-# nanobind-uv-template
+<h1 align="center">nanobind-uv-template</h1>
 
-[English](README.md) | [中文](README_zh.md)
+<p align="center">
+  <strong>开箱即用的 GitHub 模板，用于发布「核心在 C++」的 Python 包：<a href="https://nanobind.readthedocs.io/">nanobind</a>、<a href="https://cmake.org/">CMake</a>、<a href="https://docs.astral.sh/uv/">uv</a>，<code>core/</code> 与 <code>bindings/</code> 分离；示例工程名为 <code>nbuv</code>。</strong>
+</p>
 
-一个极简且开箱即用的 GitHub 模板项目，用来发布一个核心用 C++ 写的 Python 包。
-它把三样东西串起来：
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12+"></a>
+  <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
+  <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
+  <a href="https://github.com/touken928/nanobind-uv-template/stargazers"><img src="https://img.shields.io/github/stars/touken928/nanobind-uv-template?style=for-the-badge&color=yellow&logo=github" alt="GitHub stars"></a>
+</p>
 
-- [**nanobind**](https://nanobind.readthedocs.io/) — 轻量、高效的 C++/Python 绑定
-- [**CMake**](https://cmake.org/) — C++ 构建系统
-- [**uv**](https://docs.astral.sh/uv/) — Python 环境与打包前端
+<p align="center"><a href="README.md">English</a></p>
 
-Python 侧构建后端是
-[`scikit-build-core`](https://scikit-build-core.readthedocs.io/)，
-`uv sync` / `uv build` 时由 `uv` 透明驱动。
+Python 侧构建后端是[`scikit-build-core`](https://scikit-build-core.readthedocs.io/)，`uv sync` / `uv build` 时由 `uv` 透明驱动。
 
 模板仓库地址：
 <https://github.com/touken928/nanobind-uv-template>
@@ -78,7 +81,6 @@ nanobind-uv-template/
 
 ## 环境要求
 
-- Python **3.12+**
 - C++17 编译器（Clang 8+ / GCC 8+ / MSVC 2019+）
 - CMake 3.15+（`scikit-build-core` 会在需要时自动拉取）
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)

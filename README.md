@@ -1,17 +1,20 @@
-# nanobind-uv-template
+<h1 align="center">nanobind-uv-template</h1>
 
-[English](README.md) | [中文](README_zh.md)
+<p align="center">
+  <strong>Batteries-included GitHub template for a Python package whose core is C++: <a href="https://nanobind.readthedocs.io/">nanobind</a>, <a href="https://cmake.org/">CMake</a>, and <a href="https://docs.astral.sh/uv/">uv</a> — separate <code>core/</code> and <code>bindings/</code>; the sample project is <code>nbuv</code>.</strong>
+</p>
 
-A minimal, batteries-included GitHub template for shipping a Python package
-whose core is written in C++. It wires up three moving parts:
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12+"></a>
+  <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
+  <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
+  <a href="https://github.com/touken928/nanobind-uv-template/stargazers"><img src="https://img.shields.io/github/stars/touken928/nanobind-uv-template?style=for-the-badge&color=yellow&logo=github" alt="GitHub stars"></a>
+</p>
 
-- [**nanobind**](https://nanobind.readthedocs.io/) — fast, small C++/Python bindings
-- [**CMake**](https://cmake.org/) — the native build system
-- [**uv**](https://docs.astral.sh/uv/) — the Python environment / packaging frontend
+<p align="center"><a href="README_zh.md">简体中文</a></p>
 
-The Python build backend is
-[`scikit-build-core`](https://scikit-build-core.readthedocs.io/); `uv` drives
-it transparently during `uv sync` / `uv build`.
+The Python build backend is[`scikit-build-core`](https://scikit-build-core.readthedocs.io/); `uv` drives it transparently during `uv sync` / `uv build`.
 
 Template repository:
 <https://github.com/touken928/nanobind-uv-template>
@@ -79,7 +82,6 @@ Dependencies flow one way: `core` ← `bindings` ← `src/nbuv`.
 
 ## Requirements
 
-- Python **3.12+**
 - C++17 compiler (Clang 8+ / GCC 8+ / MSVC 2019+)
 - CMake 3.15+ (fetched automatically by `scikit-build-core` if missing)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
