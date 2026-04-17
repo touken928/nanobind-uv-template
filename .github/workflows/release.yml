@@ -1,16 +1,11 @@
 # Build wheels on Linux / Windows / macOS (and an sdist on Linux), then attach
-# them to a GitHub Release. Triggered when a version tag like `v0.1.0` is pushed.
+# them to a GitHub Release. Triggered on push of tags matching `v*`.
 #
 # GitHub Packages has no official Python (PyPI) registry; GitHub Releases is the
 # idiomatic way to ship pre-built wheels from a GitHub repository. Consumers
-# install with:
+# install with (asset name must exist on the latest release):
 #
-#     pip install https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/<wheel>
-#
-# or let pip/uv pick the right file for the current platform:
-#
-#     pip install --index-url https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ nbuv
-#     uv add   --index https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ nbuv
+#     pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel>
 
 name: Release
 
@@ -21,7 +16,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to (re)build a release for (e.g. v0.1.0)."
+        description: "Existing v*-prefixed tag to (re)build a release for."
         required: true
         type: string
 

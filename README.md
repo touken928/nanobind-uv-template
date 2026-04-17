@@ -16,8 +16,6 @@ it transparently during `uv sync` / `uv build`.
 Template repository:
 <https://github.com/touken928/nanobind-uv-template>
 
-> **Naming convention**
->
 > `nanobind-uv-template` is only the **GitHub template's name**. Everything
 > inside the repo — the Python distribution, the import name, the C++
 > namespace, the library target, the CMake project — is called **`nbuv`**.
@@ -117,26 +115,23 @@ Linux, and publishes them as assets on a GitHub Release with the same tag
 name.
 
 ```bash
-uv version 0.1.0             # bump version in pyproject.toml
-git commit -am "Release v0.1.0"
-git tag v0.1.0
+uv version X.Y.Z             # bump version in pyproject.toml
+git commit -am "Release vX.Y.Z"
+git tag vX.Y.Z
 git push && git push --tags
 ```
 
-Install the published wheels directly from the release:
+Install the published wheels with a direct asset URL (copy the exact
+`.whl` name from the release — it embeds the package version and platform
+tags):
 
 ```bash
-# Pin a specific wheel URL
-pip install https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/<wheel-file>
-
-# Or point pip/uv at the release folder and let it pick the right wheel
-pip install \
-  --index-url https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
-  nbuv
-uv add \
-  --index https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
-  nbuv
+pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel-file>
 ```
+
+After you publish a new version, asset names change with the version segment;
+open [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
+and refresh the URL you use.
 
 > GitHub Packages does not currently offer a Python (PyPI) registry.
 > **GitHub Releases** is the idiomatic way to ship pre-built wheels from a
