@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from importlib.metadata import version
+
 import nbuv as m
 
 
 def test_version() -> None:
-    assert isinstance(m.__version__, str)
-    assert m.__version__
+    v = version("nbuv")
+    assert isinstance(v, str)
+    assert v
 
 
 def test_add() -> None:

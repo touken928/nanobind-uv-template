@@ -32,6 +32,4 @@ NB_MODULE(_core, m) {
                      &nbuv::Greeter::name,
                      &nbuv::Greeter::set_name,
                      "The name used in the greeting.");
-
-    m.attr("__version__") = "0.1.0";
 }
