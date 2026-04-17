@@ -144,4 +144,4 @@ target_link_libraries(my_app PRIVATE nbuv::core)
 
 ## License
 
-MIT © [touken928](https://github.com/touken928)
+采用 [Apache License 2.0](LICENSE)，全文见仓库根目录 `LICENSE` 文件。
