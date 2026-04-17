@@ -109,6 +109,39 @@ on the next `uv sync` / `uv run`.
 The wheel is tagged `cp312-abi3` (Python stable ABI), so a single artifact
 works across Python 3.12 and every later 3.x release.
 
+## Releasing
+
+Pushing a tag that starts with `v` triggers `.github/workflows/release.yml`,
+which cross-builds wheels on Linux / Windows / macOS, builds an sdist on
+Linux, and publishes them as assets on a GitHub Release with the same tag
+name.
+
+```bash
+uv version 0.1.0             # bump version in pyproject.toml
+git commit -am "Release v0.1.0"
+git tag v0.1.0
+git push && git push --tags
+```
+
+Install the published wheels directly from the release:
+
+```bash
+# Pin a specific wheel URL
+pip install https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/<wheel-file>
+
+# Or point pip/uv at the release folder and let it pick the right wheel
+pip install \
+  --index-url https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
+  nbuv
+uv add \
+  --index https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
+  nbuv
+```
+
+> GitHub Packages does not currently offer a Python (PyPI) registry.
+> **GitHub Releases** is the idiomatic way to ship pre-built wheels from a
+> GitHub repository, which is what this workflow uses.
+
 ## Using `core/` as a plain C++ library
 
 `core/` is self-contained and has no dependency on Python or nanobind.

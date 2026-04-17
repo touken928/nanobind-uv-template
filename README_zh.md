@@ -108,6 +108,38 @@ uv build
 因使用 Python 稳定 ABI（`STABLE_ABI`），wheel 带 `cp312-abi3` 标签——
 一份产物即可在 Python 3.12 及以后所有 3.x 版本上复用。
 
+## 发版
+
+推一个 `v` 开头的 tag 就会触发 `.github/workflows/release.yml`——它会在
+Linux / Windows / macOS 上各编一份 wheel，在 Linux 上再做一份 sdist，
+然后把它们作为 assets 挂到同名的 GitHub Release 上。
+
+```bash
+uv version 0.1.0             # 修改 pyproject.toml 里的版本号
+git commit -am "Release v0.1.0"
+git tag v0.1.0
+git push && git push --tags
+```
+
+消费这些 wheel：
+
+```bash
+# 直接指定某个 wheel 的下载链接
+pip install https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/<wheel-file>
+
+# 或者把 release 目录当成索引，让 pip/uv 自动选当前平台的 wheel
+pip install \
+  --index-url https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
+  nbuv
+uv add \
+  --index https://github.com/touken928/nanobind-uv-template/releases/download/v0.1.0/ \
+  nbuv
+```
+
+> GitHub Packages **目前没有** Python (PyPI) 注册源。把 wheel 挂到
+> **GitHub Releases** 是在 GitHub 上分发 wheel 的通行做法，本工作流就是
+> 这么做的。
+
 ## 把 `core/` 当普通 C++ 库用
 
 `core/` 自给自足，不依赖 Python / nanobind：
