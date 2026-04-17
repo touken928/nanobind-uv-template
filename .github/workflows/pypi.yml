@@ -1,0 +1,137 @@
+# Upload wheels + sdist to PyPI when a v* tag is pushed.
+#
+# Configure Trusted Publishing on PyPI (recommended — no long-lived token in this repo):
+#   https://docs.pypi.org/trusted-publishers/
+# Project → Manage → Publishing → Add a new pending publisher → GitHub
+#   (workflow file: .github/workflows/pypi.yml, environment: pypi)
+#
+# Token-based upload instead: add repository secret PYPI_API_TOKEN and pass
+# `password: ${{ secrets.PYPI_API_TOKEN }}` into the Publish to PyPI step
+# (see https://github.com/pypa/gh-action-pypi-publish).
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing v*-prefixed tag to build and publish."
+        required: true
+        type: string
+
+concurrency:
+  group: pypi-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-wheel:
+    name: Wheel / ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux (x86_64)
+          - os: windows-latest
+            name: Windows (amd64)
+          - os: macos-latest
+            name: macOS (arm64)
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ninja-build
+
+      - name: Build wheel
+        run: uv build --wheel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.os }}
+          path: dist/*.whl
+          if-no-files-found: error
+
+  build-sdist:
+    name: Source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Build sdist
+        run: uv build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish:
+    name: Upload to PyPI
+    needs: [build-wheel, build-sdist]
+    runs-on: ubuntu-latest
+    # Skip prerelease-style tags (e.g. v1.0.0-rc.1); manual dispatch always runs.
+    if: github.event_name == 'workflow_dispatch' || !contains(github.ref_name, '-')
+    permissions:
+      # id-token: PyPI Trusted Publishing (OIDC). actions: download artifacts from this run.
+      id-token: write
+      contents: read
+      actions: read
+    environment:
+      name: pypi
+      url: https://pypi.org/project/nbuv/
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "{wheel-*,sdist}"
+          merge-multiple: true
+
+      - name: List distributions
+        run: ls -la dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          skip-existing: true

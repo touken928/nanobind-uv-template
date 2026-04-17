@@ -109,10 +109,14 @@ works across Python 3.12 and every later 3.x release.
 
 ## Releasing
 
-Pushing a tag that starts with `v` triggers `.github/workflows/release.yml`,
-which cross-builds wheels on Linux / Windows / macOS, builds an sdist on
-Linux, and publishes them as assets on a GitHub Release with the same tag
-name.
+Pushing a `v*` tag runs two workflows in parallel:
+
+| Workflow | What it does |
+| -------- | -------------- |
+| `.github/workflows/release.yml` | Builds wheels + sdist and attaches them to a GitHub Release. |
+| `.github/workflows/pypi.yml` | Builds wheels + sdist and uploads them to **PyPI** (`pip install nbuv`). |
+
+Configure [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/) once (GitHub workflow `pypi.yml`, environment `pypi`). On tag push, the PyPI job is skipped if the tag name contains `-` (treated as a pre-release). Use a [repository secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) `PYPI_API_TOKEN` instead if you do not use Trusted Publishing—see the comments in `pypi.yml`.
 
 ```bash
 uv version X.Y.Z             # bump version in pyproject.toml
@@ -121,21 +125,21 @@ git tag vX.Y.Z
 git push && git push --tags
 ```
 
-Install the published wheels with a direct asset URL (copy the exact
-`.whl` name from the release — it embeds the package version and platform
-tags):
+**From PyPI** (after a successful upload):
+
+```bash
+pip install nbuv
+```
+
+**From GitHub Releases** — use a direct asset URL (copy the exact `.whl` name from the release; it embeds the version and platform tags):
 
 ```bash
 pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel-file>
 ```
 
-After you publish a new version, asset names change with the version segment;
-open [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
-and refresh the URL you use.
-
-> GitHub Packages does not currently offer a Python (PyPI) registry.
-> **GitHub Releases** is the idiomatic way to ship pre-built wheels from a
-> GitHub repository, which is what this workflow uses.
+After each release, wheel filenames change with the version; check
+[Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
+if you install by URL.
 
 ## Using `core/` as a plain C++ library
 

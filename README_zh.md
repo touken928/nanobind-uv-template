@@ -108,9 +108,14 @@ uv build
 
 ## 发版
 
-推一个 `v` 开头的 tag 就会触发 `.github/workflows/release.yml`——它会在
-Linux / Windows / macOS 上各编一份 wheel，在 Linux 上再做一份 sdist，
-然后把它们作为 assets 挂到同名的 GitHub Release 上。
+推送 `v*` tag 会**并行**跑两个工作流：
+
+| 工作流 | 作用 |
+| ------ | ---- |
+| `.github/workflows/release.yml` | 构建 wheel + sdist，并挂到 GitHub Release。 |
+| `.github/workflows/pypi.yml` | 构建 wheel + sdist，并上传到 **PyPI**（`pip install nbuv`）。 |
+
+在 PyPI 上配置一次 [Trusted Publishing](https://docs.pypi.org/trusted-publishers/)（关联本仓库的 workflow `pypi.yml`、environment `pypi`）。若 **push** 的 tag 名称里含 `-`（视为预发布），会跳过 PyPI 上传。若不用 Trusted Publishing，可用仓库密钥 `PYPI_API_TOKEN`——见 `pypi.yml` 内注释。
 
 ```bash
 uv version X.Y.Z             # 修改 pyproject.toml 里的版本号
@@ -119,19 +124,21 @@ git tag vX.Y.Z
 git push && git push --tags
 ```
 
-消费这些 wheel：用资源直链安装（从 Release 页面复制完整 `.whl` 文件名——其中含版本与平台标签）：
+**从 PyPI 安装**（上传成功后）：
+
+```bash
+pip install nbuv
+```
+
+**从 GitHub Releases 安装**——使用资源直链（从 Release 页面复制完整 `.whl` 文件名，其中含版本与平台标签）：
 
 ```bash
 pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel-file>
 ```
 
-发新版后，wheel 文件名里的版本段会变，请到
+每次发版后 wheel 文件名会随版本变化；若用 URL 安装，请到
 [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
-核对并更新你使用的链接。
-
-> GitHub Packages **目前没有** Python (PyPI) 注册源。把 wheel 挂到
-> **GitHub Releases** 是在 GitHub 上分发 wheel 的通行做法，本工作流就是
-> 这么做的。
+核对。
 
 ## 把 `core/` 当普通 C++ 库用
 
