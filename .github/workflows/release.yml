@@ -40,8 +40,12 @@ jobs:
         include:
           - os: ubuntu-latest
             name: Linux (x86_64)
+          - os: ubuntu-24.04-arm
+            name: Linux (aarch64)
           - os: windows-latest
             name: Windows (amd64)
+          - os: windows-11-arm
+            name: Windows (arm64)
           - os: macos-latest
             name: macOS (arm64)
 
@@ -74,7 +78,7 @@ jobs:
       - name: Build wheel
         run: uv build --package nbuv --wheel
 
-      # PyPI / pip expect manylinux_* on Linux x86_64, not bare linux_x86_64.
+      # PyPI expects manylinux_* wheels on Linux (x86_64 / aarch64), not bare linux_* tags.
       - name: Repair Linux wheel (manylinux)
         if: runner.os == 'Linux'
         run: |
