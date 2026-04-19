@@ -7,8 +7,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12"></a>
   <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
-  <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
+  <a href="https://github.com/touken928/nanobind-uv-template/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/touken928/nanobind-uv-template/ci.yml?branch=main&logo=github&label=CI&style=for-the-badge" alt="CI"></a>
   <a href="https://github.com/touken928/nanobind-uv-template/stargazers"><img src="https://img.shields.io/github/stars/touken928/nanobind-uv-template?style=for-the-badge&color=yellow&logo=github" alt="GitHub stars"></a>
 </p>
 
@@ -39,7 +38,7 @@ Python 侧构建后端是
    git mv packages/nbuv packages/<your_pkg>
    git mv packages/<your_pkg>/src/nbuv \
           packages/<your_pkg>/src/<your_pkg>
-
+   
    # 列出所有还写着 nbuv 的文件
    rg -l '\bnbuv\b'
    ```
@@ -143,10 +142,13 @@ target_link_libraries(my_app PRIVATE nbuv::nbuv)
 
 ## 发版
 
-推送 `v*` tag 会**并行**跑两个工作流：
+对 `main` 的 **push** 与 **pull request** 会跑
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)（`pytest` + C++ 测试）。
+推送 `v*` tag 还会**并行**跑下面两个发布工作流：
 
 | 工作流 | 作用 |
 | ------ | ---- |
+| `.github/workflows/ci.yml` | 在 `main` 上跑 Python 与 C++ 测试。 |
 | `.github/workflows/release.yml` | 构建 wheel，并挂到 GitHub Release。 |
 | `.github/workflows/pypi.yml` | 构建 wheel，并上传到 **PyPI**（`pip install nbuv`）。 |
 
@@ -213,4 +215,6 @@ pip install https://github.com/touken928/nanobind-uv-template/releases/latest/do
 
 ## 许可证
 
-采用 [Apache License, Version 2.0](LICENSE)，详见 `LICENSE`。
+仓库根目录**不设**随模板一并复制的 `LICENSE`，便于你在生成或 fork 后自行选择许可证。
+
+示例 **`nbuv`** 分发采用 [Apache License, Version 2.0](packages/nbuv/LICENSE)，全文见该路径。

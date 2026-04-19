@@ -1,0 +1,53 @@
+# Run tests on every push / PR so the Actions badge reflects default-branch health.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Ubuntu / uv + pytest + C++
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build patchelf
+
+      - name: Sync workspace and run Python tests
+        run: |
+          uv sync --all-groups
+          uv run pytest packages/nbuv/tests --verbose
+
+      - name: Configure and test C++ library
+        run: |
+          cmake -S libs/nbuv -B build-ci -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-ci -j "$(nproc)"
+          ctest --test-dir build-ci --output-on-failure

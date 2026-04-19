@@ -7,8 +7,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12"></a>
   <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
-  <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
+  <a href="https://github.com/touken928/nanobind-uv-template/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/touken928/nanobind-uv-template/ci.yml?branch=main&logo=github&label=CI&style=for-the-badge" alt="CI"></a>
   <a href="https://github.com/touken928/nanobind-uv-template/stargazers"><img src="https://img.shields.io/github/stars/touken928/nanobind-uv-template?style=for-the-badge&color=yellow&logo=github" alt="GitHub stars"></a>
 </p>
 
@@ -145,10 +144,13 @@ target_link_libraries(my_app PRIVATE nbuv::nbuv)
 
 ## Releasing
 
+Pushes and pull requests against `main` run
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) (`pytest` plus C++ tests).
 Pushing a `v*` tag runs two workflows in parallel:
 
 | Workflow | What it does |
 | -------- | -------------- |
+| `.github/workflows/ci.yml` | Validates `main` with Python and C++ tests. |
 | `.github/workflows/release.yml` | Builds wheels and attaches them to a GitHub Release. |
 | `.github/workflows/pypi.yml` | Builds wheels and uploads them to **PyPI** (`pip install nbuv`). |
 
@@ -218,5 +220,9 @@ if you install by URL.
 
 ## License
 
-Licensed under the [Apache License, Version 2.0](LICENSE). See that file for the
-full text.
+There is **no repository-wide license file** at the root — this is intentional
+for a GitHub template: choose and add your own `LICENSE` after you generate or
+fork a project.
+
+The example **`nbuv`** distribution is licensed under the [Apache License,
+Version 2.0](packages/nbuv/LICENSE); see that path for the full text.
