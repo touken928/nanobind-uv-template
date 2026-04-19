@@ -1,11 +1,11 @@
 # Standalone, Python-agnostic C++ core library.
 #
-# This target has no dependency on nanobind / Python; the bindings in
-# packages/nbuv/bindings link to it and only translate calls to/from Python.
+# This target has no dependency on nanobind / Python; the bindings at the
+# repository root link to it and only translate calls to/from Python.
 #
 # Works two ways:
 #   1. add_subdirectory(libs/nbuv) from a parent CMake project, or
-#      via packages/nbuv/CMakeLists.txt (Python / scikit-build-core build).
+#      via the repository root CMakeLists.txt (Python / scikit-build-core build).
 #   2. As the CMake project root on its own:
 #        cmake -S libs/nbuv -B build-nbuv
 

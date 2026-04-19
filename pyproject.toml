@@ -1,8 +1,68 @@
 #
-# Root of the nanobind-uv-template monorepo.
+# Root layout: Python distribution ``nbuv`` lives here next to ``libs/nbuv``.
 #
-# There is no top-level Python distribution here. Each package lives under
-# ``packages/<name>/``. uv discovers them via the workspace table below.
-#
-[tool.uv.workspace]
-members = ["packages/*"]
+
+[build-system]
+requires = ["scikit-build-core >=0.10", "nanobind >=2.12.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nbuv"
+version = "0.2.0"
+description = "Example package for the nanobind-uv-template GitHub template"
+readme = "README.md"
+requires-python = "==3.12.*"
+authors = [{ name = "touken928" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/touken928/nanobind-uv-template"
+Repository = "https://github.com/touken928/nanobind-uv-template"
+Issues = "https://github.com/touken928/nanobind-uv-template/issues"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+
+[tool.scikit-build.cmake]
+version = ">=3.15"
+build-type = "Release"
+source-dir = "."
+
+[tool.scikit-build.wheel]
+py-api = "cp312"
+
+[tool.scikit-build.wheel.packages]
+"nbuv" = "src/nbuv"
+
+# NOTE: Releases include an sdist alongside wheels. Installing from sdist still
+# compiles the extension (needs a C++ toolchain, CMake, Ninja, etc.); most users
+# should prefer the published wheels.
+
+[tool.uv]
+# Rebuild the extension whenever C++ sources, CMake glue, or libs/nbuv change.
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "CMakeLists.txt" },
+    { file = "bindings/**/CMakeLists.txt" },
+    { file = "bindings/**/*.cpp" },
+    { file = "bindings/**/*.hpp" },
+    { file = "libs/nbuv/**/CMakeLists.txt" },
+    { file = "libs/nbuv/**/*.cpp" },
+    { file = "libs/nbuv/**/*.hpp" },
+    { file = "libs/nbuv/**/*.h" },
+    { file = "libs/nbuv/**/*.cmake" },
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "scikit-build-core>=0.10",
+    "nanobind>=2.12.0",
+]

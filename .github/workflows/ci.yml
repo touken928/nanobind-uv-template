@@ -44,7 +44,7 @@ jobs:
       - name: Sync workspace and run Python tests
         run: |
           uv sync --all-groups
-          uv run pytest packages/nbuv/tests --verbose
+          uv run pytest tests --verbose
 
       - name: Configure and test C++ library
         run: |

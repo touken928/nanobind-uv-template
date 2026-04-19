@@ -1,7 +1,7 @@
 <h1 align="center">nanobind-uv-template</h1>
 
 <p align="center">
-  <strong>开箱即用的 GitHub 模板，用于发布「核心在 C++」的 Python 包：<a href="https://nanobind.readthedocs.io/">nanobind</a>、<a href="https://cmake.org/">CMake</a>、<a href="https://docs.astral.sh/uv/">uv</a> —— <code>libs/</code> C++ 库与 <code>packages/</code> Python 发行，统一在一个 <a href="https://docs.astral.sh/uv/concepts/workspaces/">uv workspace</a> 下。</strong>
+  <strong>开箱即用的 GitHub 模板，用于发布「核心在 C++」的 Python 包：<a href="https://nanobind.readthedocs.io/">nanobind</a>、<a href="https://cmake.org/">CMake</a>、<a href="https://docs.astral.sh/uv/">uv</a> —— <code>libs/</code> 放纯 C++ 库，Python 发行（示例 <code>nbuv</code>）与仓库根目录的 <code>pyproject.toml</code>、<code>bindings/</code>、<code>src/</code> 同级。</strong>
 </p>
 
 <p align="center">
@@ -35,56 +35,51 @@ Python 侧构建后端是
    ```bash
    # 重命名目录
    git mv libs/nbuv libs/<your_pkg>
-   git mv packages/nbuv packages/<your_pkg>
-   git mv packages/<your_pkg>/src/nbuv \
-          packages/<your_pkg>/src/<your_pkg>
-   
+   git mv src/nbuv src/<your_pkg>
+
    # 列出所有还写着 nbuv 的文件
    rg -l '\bnbuv\b'
    ```
-3. 更新 `packages/<your_pkg>/pyproject.toml` 里的 `[project].name`、`authors`、
-   `urls`、`version` 等。
+3. 更新仓库根目录 `pyproject.toml` 里的 `[project].name`、
+   `[tool.scikit-build.wheel.packages]`、`authors`、`urls`、`version`，并同步
+   CMake / C++ 命名空间等。
 4. `uv sync` 就可以开工了。
 
 ## 目录布局
 
 ```
 nanobind-uv-template/
-├── pyproject.toml           # uv workspace 根（虚拟，无 [project]）
+├── pyproject.toml           # scikit-build-core + `[project]`（nbuv）
+├── CMakeLists.txt           # add_subdirectory(libs/nbuv) + bindings
+├── bindings/                # nanobind 绑定 —— nbuv._core
+│   ├── CMakeLists.txt
+│   └── _core.cpp
+├── src/nbuv/                # Python 包（须与 wheel.packages 路径末段一致）
+│   ├── __init__.py
+│   └── py.typed
+├── tests/                   # pytest
+│   └── test_basic.py
 │
-├── libs/
-│   └── nbuv/                # (1) nbuv::nbuv —— 纯 C++17，不依赖 Python
-│       ├── cmake/           #     NBUVOptions、NBUVWarnings（CMake 预设）
-│       ├── CMakeLists.txt
-│       ├── include/nbuv/
-│       │   ├── math.hpp
-│       │   └── greeter.hpp
-│       ├── src/
-│       │   ├── math.cpp
-│       │   └── greeter.cpp
-│       └── tests/           #     GoogleTest 单测（FetchContent + ctest）
-│
-└── packages/
-    └── nbuv/                # (2) Python 发行包 `nbuv`
-        ├── pyproject.toml   #     scikit-build-core 后端 + 项目元数据
-        ├── CMakeLists.txt   #     add_subdirectory(libs/nbuv) + bindings
-        ├── bindings/        #     nanobind 绑定 —— nbuv._core
-        │   ├── CMakeLists.txt
-        │   └── _core.cpp
-        ├── src/nbuv/        #     Python 包（须与 wheel.packages 路径末段一致）
-        │   ├── __init__.py
-        │   └── py.typed
-        └── tests/           #     pytest
-            └── test_basic.py
+└── libs/
+    └── nbuv/                # nbuv::nbuv —— 纯 C++17，不依赖 Python
+        ├── cmake/           # NBUVOptions、NBUVWarnings（CMake 预设）
+        ├── CMakeLists.txt
+        ├── include/nbuv/
+        │   ├── math.hpp
+        │   └── greeter.hpp
+        ├── src/
+        │   ├── math.cpp
+        │   └── greeter.cpp
+        └── tests/           # GoogleTest 单测（FetchContent + ctest）
 ```
 
-依赖方向是单调的：`libs/nbuv` ← `packages/*/bindings` ← `packages/*/src`。
+依赖方向是单调的：`libs/nbuv` ← `bindings/` ← `src/nbuv/`。
 
 - **`libs/nbuv/`** 存放所有业务逻辑，纯 C++17。完全不知道 Python 的存在，任何
   CMake 项目都能通过 `add_subdirectory` 把它拿来用（target `nbuv::nbuv`）。
-- **`packages/nbuv/bindings/`** 刻意做得很薄：只 `#include "nbuv/*.hpp"` 然后
+- **`bindings/`** 刻意做得很薄：只 `#include "nbuv/*.hpp"` 然后
   `m.def(...)` / `nb::class_<...>(...)`，不放业务逻辑。
-- **`packages/nbuv/src/nbuv/`** 为可 import 的包目录；`__init__.py` 转发 `_core`。
+- **`src/nbuv/`** 为可 import 的包目录；`__init__.py` 转发 `_core`。
   `scikit-build-core` 要求 `[tool.scikit-build.wheel.packages]` 里路径的**最后一级
   目录名**与包名一致，因此使用 `nbuv = src/nbuv`。
 
@@ -104,19 +99,17 @@ uv sync
 uv run python -c "import nbuv; print(nbuv.add(2, 3), nbuv.Greeter('uv').greet())"
 
 # 3. 跑 Python 测试套件。
-uv run pytest packages/nbuv/tests
+uv run pytest tests
 
-# 4. 构建 nbuv 的 wheel 到 ./dist/。
-uv build --package nbuv --wheel
+# 4. 将 wheel 与 sdist 输出到 ./dist/（`uv build` 默认会打两种包）。
+uv build
 ```
 
-不支持 sdist。
-
-`packages/nbuv/pyproject.toml` 中 `[tool.uv] cache-keys` 已配置好，修改
+根目录 `pyproject.toml` 中 `[tool.uv] cache-keys` 已配置好，修改
 `libs/nbuv/**` / `bindings/**`（含 `libs/nbuv/**/*.cmake`）之后再次 `uv sync` / `uv run`
 会自动重新编译。
 
-wheel 使用 `cp312-abi3`（Python 稳定 ABI）标签。`packages/nbuv/pyproject.toml`
+wheel 使用 `cp312-abi3`（Python 稳定 ABI）标签。根目录 `pyproject.toml`
 里 `requires-python` 目前为 `==3.12.*`；若需支持其他 Python 版本请自行修改。
 
 ## 快速开始 —— 只编 C++
@@ -149,8 +142,8 @@ target_link_libraries(my_app PRIVATE nbuv::nbuv)
 | 工作流 | 作用 |
 | ------ | ---- |
 | `.github/workflows/ci.yml` | 在 `main` 上跑 Python 与 C++ 测试。 |
-| `.github/workflows/release.yml` | 构建 wheel，并挂到 GitHub Release。 |
-| `.github/workflows/pypi.yml` | 构建 wheel，并上传到 **PyPI**（`pip install nbuv`）。 |
+| `.github/workflows/release.yml` | 构建 wheel + sdist，并挂到 GitHub Release。 |
+| `.github/workflows/pypi.yml` | 构建 wheel + sdist，并上传到 **PyPI**（`pip install nbuv`）。 |
 
 在 PyPI 上配置一次
 [Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
@@ -159,7 +152,7 @@ target_link_libraries(my_app PRIVATE nbuv::nbuv)
 可用仓库密钥 `PYPI_API_TOKEN`——见 `pypi.yml` 内注释。
 
 ```bash
-uv version X.Y.Z             # 修改 packages/nbuv/pyproject.toml 里的版本号
+uv version X.Y.Z             # 修改 pyproject.toml 里的版本号
 git commit -am "Release vX.Y.Z"
 git tag vX.Y.Z
 git push && git push --tags
@@ -182,7 +175,7 @@ pip install https://github.com/touken928/nanobind-uv-template/releases/latest/do
 [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
 核对。
 
-> Release 与 PyPI **只发布 wheel**；需要完整源码请 `git clone` 仓库。
+> 日常使用请优先装 **wheel**（`pip install nbuv`）。也会上传 **sdist**；从 sdist 安装会在本地编译扩展，需要 C++ 工具链、CMake、Ninja 等。
 
 ## 在模板上扩展
 
@@ -190,31 +183,26 @@ pip install https://github.com/touken928/nanobind-uv-template/releases/latest/do
   `libs/nbuv/src/`，然后追加到 `libs/nbuv/CMakeLists.txt` 的
   `add_library(nbuv ...)`；在 `libs/nbuv/tests/` 加一个对应的
   `test_*.cpp`。
-- **暴露到 Python**：在 `packages/nbuv/bindings/_core.cpp` 里用
+- **暴露到 Python**：在 `bindings/_core.cpp` 里用
   `m.def(...)` / `nb::class_<...>(...)`。`__init__.py` 里的
   `from ._core import *` 会自动带上。
 - **加纯 Python 工具函数**：直接写进
-  `packages/nbuv/src/nbuv/__init__.py` 或并列加新子模块。
+  `src/nbuv/__init__.py` 或并列加新子模块。
 - **加另一个 C++ 库**：`mkdir libs/<name>`，照 `libs/nbuv/` 的结构写；在你自
-  己的顶层 CMake 里 `add_subdirectory`，或像 `packages/nbuv/CMakeLists.txt`
+  己的顶层 CMake 里 `add_subdirectory`，或像仓库根目录 `CMakeLists.txt`
   引用 `libs/nbuv` 那样嵌进去。
 - **加 C++ 依赖**：在 `libs/nbuv/CMakeLists.txt` 里 `find_package` 或
   `FetchContent`，再 `target_link_libraries(nbuv PRIVATE ...)`；
   绑定层会自动继承。
-- **加 Python 依赖**：根目录没有可发布的 `[project]`，请用
-  `uv add --package nbuv <pkg>`（或 `cd packages/nbuv` 后 `uv add <pkg>`）写到
-  `packages/nbuv`；仅开发用：`uv add --package nbuv --dev <pkg>`（对应该包的
-  `[dependency-groups].dev`）。
+- **加 Python 依赖**：在仓库根目录执行 `uv add <pkg>` / `uv add --dev <pkg>`
+  （更新 `pyproject.toml` 与 `[dependency-groups].dev`）。
 
 ## 参考
 
 - [nanobind 文档](https://nanobind.readthedocs.io/en/latest/)
 - [scikit-build-core 文档](https://scikit-build-core.readthedocs.io/)
 - [uv 文档](https://docs.astral.sh/uv/)
-- [uv workspaces](https://docs.astral.sh/uv/concepts/workspaces/)
 
 ## 许可证
 
-仓库根目录**不设**随模板一并复制的 `LICENSE`，便于你在生成或 fork 后自行选择许可证。
-
-示例 **`nbuv`** 分发采用 [Apache License, Version 2.0](packages/nbuv/LICENSE)，全文见该路径。
+本仓库中的 **`nbuv`** 分发采用 [Apache License, Version 2.0](LICENSE)。

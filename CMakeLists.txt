@@ -2,8 +2,7 @@
 #
 # Scope: pull in the pure C++ library (libs/nbuv) and compile the nanobind
 # glue layer (bindings/) into the `_core` extension module. C++ tests are
-# intentionally NOT built here. There is no repository-root CMakeLists.txt;
-# standalone C++ builds use libs/nbuv/CMakeLists.txt.
+# intentionally NOT built here. Standalone C++ builds use libs/nbuv/CMakeLists.txt.
 
 cmake_minimum_required(VERSION 3.15...3.30)
 
@@ -12,7 +11,7 @@ project(nbuv
   DESCRIPTION "nanobind bindings + CMake + uv template")
 
 # Shared defaults (C++17, warnings helper, build type).
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../libs/nbuv/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs/nbuv/cmake")
 include(NBUVOptions)
 
 # Never build C++ tests as part of the Python wheel.
@@ -20,7 +19,7 @@ set(NBUV_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 # Bring in the pure-C++ library from the repo's libs/ directory.
 add_subdirectory(
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../libs/nbuv
+  ${CMAKE_CURRENT_SOURCE_DIR}/libs/nbuv
   ${CMAKE_CURRENT_BINARY_DIR}/libs-nbuv
 )
 
