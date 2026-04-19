@@ -15,7 +15,7 @@ if(NOT DEFINED PROJECT_NAME)
   project(nbuv LANGUAGES CXX)
   # Standalone build: pull in the shared options and enable tests by default.
   set(NBUV_STANDALONE_LIB TRUE)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake/nbuv")
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
   include(NBUVOptions)
 endif()
 

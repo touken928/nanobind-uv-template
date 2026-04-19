@@ -1,8 +1,9 @@
 # Shared CMake defaults for the nbuv project (C++17, PIC, default build type).
 #
-# Entry points: libs/nbuv/CMakeLists.txt (standalone C++) or
-# packages/nbuv/CMakeLists.txt (scikit-build-core). Add
-# ``cmake/nbuv`` to CMAKE_MODULE_PATH, then ``include(NBUVOptions)``.
+# Lives next to this library under libs/nbuv/cmake/. Entry points:
+# libs/nbuv/CMakeLists.txt (standalone C++) or packages/nbuv/CMakeLists.txt
+# (scikit-build-core). Add this directory to CMAKE_MODULE_PATH, then
+# ``include(NBUVOptions)``.
 
 if(NBUV_OPTIONS_INCLUDED)
   return()

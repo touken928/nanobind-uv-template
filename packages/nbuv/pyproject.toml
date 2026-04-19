@@ -42,7 +42,8 @@ py-api = "cp312"
 
 # NOTE: scikit-build-core's sdist only picks up files under this project
 # directory, so the sdist is NOT a self-contained source build — it lacks
-# libs/nbuv and cmake/ which live at the repo root. PyPI consumers install
+# most of libs/nbuv (including libs/nbuv/cmake/) which live outside this
+# directory. PyPI consumers install
 # from the platform wheel; source builds go through `git clone`.
 
 [tool.uv]
@@ -58,7 +59,7 @@ cache-keys = [
     { file = "../../libs/nbuv/**/*.cpp" },
     { file = "../../libs/nbuv/**/*.hpp" },
     { file = "../../libs/nbuv/**/*.h" },
-    { file = "../../cmake/**/*.cmake" },
+    { file = "../../libs/nbuv/**/*.cmake" },
 ]
 
 [dependency-groups]

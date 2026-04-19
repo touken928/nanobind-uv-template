@@ -50,11 +50,10 @@ Template repository:
 ```
 nanobind-uv-template/
 ├── pyproject.toml           # uv workspace root (virtual; no [project])
-├── cmake/
-│   └── nbuv/                # nbuv CMake modules (NBUVOptions, NBUVWarnings)
 │
 ├── libs/
 │   └── nbuv/                # (1) nbuv::nbuv — pure C++17 library, Python-agnostic
+│       ├── cmake/           #     NBUVOptions, NBUVWarnings (CMake presets)
 │       ├── CMakeLists.txt
 │       ├── include/nbuv/
 │       │   ├── math.hpp
@@ -108,13 +107,14 @@ uv run python -c "import nbuv; print(nbuv.add(2, 3), nbuv.Greeter('uv').greet())
 # 3. Run the Python test suite.
 uv run pytest packages/nbuv/tests
 
-# 4. Build the nbuv wheel (and/or sdist) into ./dist/.
+# 4. Build the nbuv wheel into ./dist/.
 uv build --package nbuv --wheel
-uv build --package nbuv --sdist
 ```
 
+Sdist is not published.
+
 Thanks to `[tool.uv] cache-keys` in `packages/nbuv/pyproject.toml`, changes
-under `libs/nbuv/**` / `bindings/**` / `cmake/**` automatically trigger a
+under `libs/nbuv/**` / `bindings/**` (including `libs/nbuv/**/*.cmake`) automatically trigger a
 rebuild on the next `uv sync` / `uv run`.
 
 The wheel is tagged `cp312-abi3` (Python stable ABI). Package metadata sets
@@ -149,8 +149,8 @@ Pushing a `v*` tag runs two workflows in parallel:
 
 | Workflow | What it does |
 | -------- | -------------- |
-| `.github/workflows/release.yml` | Builds wheels + sdist and attaches them to a GitHub Release. |
-| `.github/workflows/pypi.yml` | Builds wheels + sdist and uploads them to **PyPI** (`pip install nbuv`). |
+| `.github/workflows/release.yml` | Builds wheels and attaches them to a GitHub Release. |
+| `.github/workflows/pypi.yml` | Builds wheels and uploads them to **PyPI** (`pip install nbuv`). |
 
 Configure [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
 once (GitHub workflow `pypi.yml`, environment `pypi`). On tag push, the PyPI
@@ -183,9 +183,7 @@ After each release, wheel filenames change with the version; check
 [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
 if you install by URL.
 
-> **Source builds from the published sdist are not supported** — `libs/nbuv`
-> and `cmake/` live outside `packages/nbuv/`, so the sdist tarball is
-> metadata-only. Build from `git clone` or install a prebuilt wheel.
+> Releases and PyPI ship **wheels only**. For a full source checkout, clone the repository.
 
 ## Extending the template
 
@@ -205,8 +203,11 @@ if you install by URL.
   `libs/nbuv/CMakeLists.txt`, then
   `target_link_libraries(nbuv PRIVATE ...)`. The binding layer inherits
   it transitively.
-- **Add a Python dependency**: `uv add <pkg>` from the workspace root; mark
-  dev-only with `uv add --dev <pkg>`.
+- **Add a Python dependency**: the repo root has no publishable `[project]`
+  table — use `uv add --package nbuv <pkg>` (or `cd packages/nbuv` then
+  `uv add <pkg>`). For dev-only tools:
+  `uv add --package nbuv --dev <pkg>` (targets that package's
+  `[dependency-groups].dev`).
 
 ## References
 

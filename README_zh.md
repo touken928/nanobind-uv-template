@@ -52,11 +52,10 @@ Python 侧构建后端是
 ```
 nanobind-uv-template/
 ├── pyproject.toml           # uv workspace 根（虚拟，无 [project]）
-├── cmake/
-│   └── nbuv/                # nbuv 共用 CMake 模块（NBUVOptions、告警）
 │
 ├── libs/
 │   └── nbuv/                # (1) nbuv::nbuv —— 纯 C++17，不依赖 Python
+│       ├── cmake/           #     NBUVOptions、NBUVWarnings（CMake 预设）
 │       ├── CMakeLists.txt
 │       ├── include/nbuv/
 │       │   ├── math.hpp
@@ -108,13 +107,14 @@ uv run python -c "import nbuv; print(nbuv.add(2, 3), nbuv.Greeter('uv').greet())
 # 3. 跑 Python 测试套件。
 uv run pytest packages/nbuv/tests
 
-# 4. 构建 nbuv 的 wheel（或 sdist）到 ./dist/。
+# 4. 构建 nbuv 的 wheel 到 ./dist/。
 uv build --package nbuv --wheel
-uv build --package nbuv --sdist
 ```
 
+不支持 sdist。
+
 `packages/nbuv/pyproject.toml` 中 `[tool.uv] cache-keys` 已配置好，修改
-`libs/nbuv/**` / `bindings/**` / `cmake/**` 之后再次 `uv sync` / `uv run`
+`libs/nbuv/**` / `bindings/**`（含 `libs/nbuv/**/*.cmake`）之后再次 `uv sync` / `uv run`
 会自动重新编译。
 
 wheel 使用 `cp312-abi3`（Python 稳定 ABI）标签。`packages/nbuv/pyproject.toml`
@@ -147,8 +147,8 @@ target_link_libraries(my_app PRIVATE nbuv::nbuv)
 
 | 工作流 | 作用 |
 | ------ | ---- |
-| `.github/workflows/release.yml` | 构建 wheel + sdist，并挂到 GitHub Release。 |
-| `.github/workflows/pypi.yml` | 构建 wheel + sdist，并上传到 **PyPI**（`pip install nbuv`）。 |
+| `.github/workflows/release.yml` | 构建 wheel，并挂到 GitHub Release。 |
+| `.github/workflows/pypi.yml` | 构建 wheel，并上传到 **PyPI**（`pip install nbuv`）。 |
 
 在 PyPI 上配置一次
 [Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
@@ -180,9 +180,7 @@ pip install https://github.com/touken928/nanobind-uv-template/releases/latest/do
 [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
 核对。
 
-> **不支持直接用 sdist 源码包重新编译**：`libs/nbuv` 和 `cmake/` 位于
-> `packages/nbuv/` 之外，所以 sdist 只含元数据。需要从源码编时请 `git clone`
-> 仓库，或者直接装预编好的 wheel。
+> Release 与 PyPI **只发布 wheel**；需要完整源码请 `git clone` 仓库。
 
 ## 在模板上扩展
 
@@ -201,8 +199,10 @@ pip install https://github.com/touken928/nanobind-uv-template/releases/latest/do
 - **加 C++ 依赖**：在 `libs/nbuv/CMakeLists.txt` 里 `find_package` 或
   `FetchContent`，再 `target_link_libraries(nbuv PRIVATE ...)`；
   绑定层会自动继承。
-- **加 Python 依赖**：在仓库根 `uv add <pkg>`；仅开发时用的依赖
-  `uv add --dev <pkg>`。
+- **加 Python 依赖**：根目录没有可发布的 `[project]`，请用
+  `uv add --package nbuv <pkg>`（或 `cd packages/nbuv` 后 `uv add <pkg>`）写到
+  `packages/nbuv`；仅开发用：`uv add --package nbuv --dev <pkg>`（对应该包的
+  `[dependency-groups].dev`）。
 
 ## 参考
 

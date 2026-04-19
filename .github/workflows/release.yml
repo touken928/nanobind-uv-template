@@ -1,5 +1,5 @@
-# Build wheels on Linux / Windows / macOS (and an sdist on Linux), then attach
-# them to a GitHub Release. Triggered on push of tags matching `v*`.
+# Build wheels on Linux / Windows / macOS, then attach them to a GitHub Release.
+# Triggered on push of tags matching `v*`.
 #
 # The Python distribution `nbuv` is a uv workspace member under
 # `packages/nbuv/`. `uv build --package nbuv` from the repo root drives the
@@ -94,38 +94,9 @@ jobs:
           path: dist/*.whl
           if-no-files-found: error
 
-  build-sdist:
-    name: Source distribution
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag || github.ref }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: latest
-
-      - name: Build sdist
-        run: uv build --package nbuv --sdist
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sdist
-          path: dist/*.tar.gz
-          if-no-files-found: error
-
   publish:
     name: Publish GitHub Release
-    needs: [build-wheel, build-sdist]
+    needs: [build-wheel]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -135,7 +106,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: "{wheel-*,sdist}"
+          pattern: "wheel-*"
           merge-multiple: true
 
       - name: List artifacts
