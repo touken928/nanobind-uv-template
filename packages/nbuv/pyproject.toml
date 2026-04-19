@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nbuv"
-version = "0.1.1"
+version = "0.2.0"
 description = "Example package for the nanobind-uv-template GitHub template"
 readme = "README.md"
 requires-python = ">=3.12"

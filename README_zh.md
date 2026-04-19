@@ -52,7 +52,8 @@ Python 侧构建后端是
 ```
 nanobind-uv-template/
 ├── pyproject.toml           # uv workspace 根（虚拟，无 [project]）
-├── cmake/                   # 共用 CMake 脚本（选项、告警）
+├── cmake/
+│   └── nbuv/                # nbuv 共用 CMake 模块（NBUVOptions、告警）
 │
 ├── libs/
 │   └── nbuv/                # (1) nbuv::nbuv —— 纯 C++17，不依赖 Python

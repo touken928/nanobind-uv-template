@@ -51,7 +51,8 @@ Template repository:
 ```
 nanobind-uv-template/
 ├── pyproject.toml           # uv workspace root (virtual; no [project])
-├── cmake/                   # shared CMake helpers (options, warnings)
+├── cmake/
+│   └── nbuv/                # nbuv CMake modules (NBUVOptions, NBUVWarnings)
 │
 ├── libs/
 │   └── nbuv/                # (1) nbuv::nbuv — pure C++17 library, Python-agnostic

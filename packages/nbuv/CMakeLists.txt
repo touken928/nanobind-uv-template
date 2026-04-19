@@ -12,7 +12,7 @@ project(nbuv
   DESCRIPTION "nanobind bindings + CMake + uv template")
 
 # Shared defaults (C++17, warnings helper, build type).
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake/nbuv")
 include(NBUVOptions)
 
 # Never build C++ tests as part of the Python wheel.

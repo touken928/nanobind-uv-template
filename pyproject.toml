@@ -1,10 +1,8 @@
 #
 # Root of the nanobind-uv-template monorepo.
 #
-# This file is intentionally minimal: there is no top-level Python distribution
-# here. Each Python package has its own pyproject.toml under `packages/<name>/`.
-# uv discovers them through the workspace table below, so `uv sync` /
-# `uv run` / `uv build -p <name>` all work from the repo root.
+# There is no top-level Python distribution here. Each package lives under
+# ``packages/<name>/``. uv discovers them via the workspace table below.
 #
 [tool.uv.workspace]
 members = ["packages/*"]
