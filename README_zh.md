@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12+"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12"></a>
   <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
   <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
@@ -73,7 +73,7 @@ nanobind-uv-template/
         ├── bindings/        #     nanobind 绑定 —— nbuv._core
         │   ├── CMakeLists.txt
         │   └── _core.cpp
-        ├── src/nbuv/        #     Python 包门面
+        ├── src/nbuv/        #     Python 包（须与 wheel.packages 路径末段一致）
         │   ├── __init__.py
         │   └── py.typed
         └── tests/           #     pytest
@@ -86,8 +86,9 @@ nanobind-uv-template/
   CMake 项目都能通过 `add_subdirectory` 把它拿来用（target `nbuv::nbuv`）。
 - **`packages/nbuv/bindings/`** 刻意做得很薄：只 `#include "nbuv/*.hpp"` 然后
   `m.def(...)` / `nb::class_<...>(...)`，不放业务逻辑。
-- **`packages/nbuv/src/nbuv/__init__.py`** 把编译好的 `_core` 子模块转发成
-  包的公开 API；想加纯 Python 工具函数也写在这里。
+- **`packages/nbuv/src/nbuv/`** 为可 import 的包目录；`__init__.py` 转发 `_core`。
+  `scikit-build-core` 要求 `[tool.scikit-build.wheel.packages]` 里路径的**最后一级
+  目录名**与包名一致，因此使用 `nbuv = src/nbuv`。
 
 ## 环境要求
 
@@ -116,8 +117,8 @@ uv build --package nbuv --sdist
 `libs/nbuv/**` / `bindings/**` / `cmake/**` 之后再次 `uv sync` / `uv run`
 会自动重新编译。
 
-因使用 Python 稳定 ABI（`STABLE_ABI`），wheel 带 `cp312-abi3` 标签——
-一份产物即可在 Python 3.12 及以后所有 3.x 版本上复用。
+wheel 使用 `cp312-abi3`（Python 稳定 ABI）标签。`packages/nbuv/pyproject.toml`
+里 `requires-python` 目前为 `==3.12.*`；若需支持其他 Python 版本请自行修改。
 
 ## 快速开始 —— 只编 C++
 

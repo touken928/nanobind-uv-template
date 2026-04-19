@@ -7,7 +7,7 @@ name = "nbuv"
 version = "0.2.0"
 description = "Example package for the nanobind-uv-template GitHub template"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = "==3.12.*"
 authors = [{ name = "touken928" }]
 license = { file = "LICENSE" }
 classifiers = [

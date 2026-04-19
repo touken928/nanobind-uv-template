@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12+"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12"></a>
   <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=for-the-badge" alt="License: Apache 2.0"></a>
   <a href="https://pypi.org/project/nbuv/"><img src="https://img.shields.io/pypi/v/nbuv.svg?style=for-the-badge&logo=pypi&logoColor=white&label=pypi" alt="PyPI version"></a>
@@ -36,8 +36,7 @@ Template repository:
    # rename on disk
    git mv libs/nbuv libs/<your_pkg>
    git mv packages/nbuv packages/<your_pkg>
-   git mv packages/<your_pkg>/src/nbuv \
-          packages/<your_pkg>/src/<your_pkg>
+   git mv packages/<your_pkg>/src/nbuv packages/<your_pkg>/src/<your_pkg>
 
    # list every file that still references `nbuv`
    rg -l '\bnbuv\b'
@@ -72,7 +71,7 @@ nanobind-uv-template/
         ├── bindings/        #     nanobind glue — nbuv._core
         │   ├── CMakeLists.txt
         │   └── _core.cpp
-        ├── src/nbuv/        #     Python package facade
+        ├── src/nbuv/        #     Python package (must match wheel.packages path tail)
         │   ├── __init__.py
         │   └── py.typed
         └── tests/           #     pytest
@@ -86,8 +85,10 @@ Dependencies flow one way: `libs/nbuv` ← `packages/*/bindings` ← `packages/*
   (target `nbuv::nbuv`).
 - **`packages/nbuv/bindings/`** is intentionally thin: `#include` the
   `nbuv/*.hpp` headers and call `m.def(...)` / `nb::class_<...>(...)` — no logic.
-- **`packages/nbuv/src/nbuv/__init__.py`** re-exports the compiled `_core`
-  submodule as the package's public API; any pure-Python helpers go here.
+- **`packages/nbuv/src/nbuv/`** holds the importable package: `__init__.py`
+  re-exports `_core`. `scikit-build-core` expects the wheel package folder name
+  (last path segment in `[tool.scikit-build.wheel.packages]`) to match the
+  distribution / import name — here `nbuv = src/nbuv`.
 
 ## Requirements
 
@@ -116,8 +117,9 @@ Thanks to `[tool.uv] cache-keys` in `packages/nbuv/pyproject.toml`, changes
 under `libs/nbuv/**` / `bindings/**` / `cmake/**` automatically trigger a
 rebuild on the next `uv sync` / `uv run`.
 
-The wheel is tagged `cp312-abi3` (Python stable ABI), so a single artifact
-works across Python 3.12 and every later 3.x release.
+The wheel is tagged `cp312-abi3` (Python stable ABI). Package metadata sets
+`requires-python == 3.12.*` in `packages/nbuv/pyproject.toml` — edit that field
+if you need a different Python range.
 
 ## Quick start — C++ only
 
