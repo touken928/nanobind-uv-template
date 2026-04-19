@@ -1,8 +1,12 @@
 # Build wheels on Linux / Windows / macOS (and an sdist on Linux), then attach
 # them to a GitHub Release. Triggered on push of tags matching `v*`.
 #
-# GitHub Packages has no official Python (PyPI) registry; GitHub Releases is the
-# idiomatic way to ship pre-built wheels from a GitHub repository. Consumers
+# The Python distribution `nbuv` is a uv workspace member under
+# `packages/nbuv/`. `uv build --package nbuv` from the repo root drives the
+# build; artifacts land in `./dist/`.
+#
+# GitHub Packages has no official Python (PyPI) registry; GitHub Releases is
+# the idiomatic way to ship pre-built wheels from a GitHub repository. Consumers
 # install with (asset name must exist on the latest release):
 #
 #     pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel>
@@ -28,9 +32,6 @@ permissions:
   contents: read
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # 1. Platform-native wheels.
-  # ---------------------------------------------------------------------------
   build-wheel:
     name: Wheel / ${{ matrix.name }}
     strategy:
@@ -71,7 +72,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends ninja-build patchelf
 
       - name: Build wheel
-        run: uv build --wheel
+        run: uv build --package nbuv --wheel
 
       # PyPI / pip expect manylinux_* on Linux x86_64, not bare linux_x86_64.
       - name: Repair Linux wheel (manylinux)
@@ -89,12 +90,12 @@ jobs:
           path: dist/*.whl
           if-no-files-found: error
 
-  # ---------------------------------------------------------------------------
-  # 2. Source distribution (platform-independent).
-  # ---------------------------------------------------------------------------
   build-sdist:
     name: Source distribution
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
@@ -110,7 +111,7 @@ jobs:
           version: latest
 
       - name: Build sdist
-        run: uv build --sdist
+        run: uv build --package nbuv --sdist
 
       - uses: actions/upload-artifact@v4
         with:
@@ -118,9 +119,6 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
 
-  # ---------------------------------------------------------------------------
-  # 3. Create the GitHub Release and attach every artifact to it.
-  # ---------------------------------------------------------------------------
   publish:
     name: Publish GitHub Release
     needs: [build-wheel, build-sdist]

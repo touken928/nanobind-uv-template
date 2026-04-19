@@ -1,4 +1,4 @@
-# nanobind glue: turns the pure-C++ nbuv::core library into the `nbuv._core`
+# nanobind glue: turns the pure-C++ nbuv::nbuv library into the `nbuv._core`
 # Python submodule. The `nbuv` Python package (src/nbuv/__init__.py) then
 # re-exports its symbols as the public API.
 
@@ -9,7 +9,7 @@ nanobind_add_module(
   _core.cpp
 )
 
-target_link_libraries(_core PRIVATE nbuv::core)
+target_link_libraries(_core PRIVATE nbuv::nbuv)
 
 install(TARGETS _core LIBRARY DESTINATION nbuv)
 

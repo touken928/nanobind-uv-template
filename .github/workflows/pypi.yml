@@ -1,7 +1,11 @@
 # Upload wheels + sdist to PyPI when a v* tag is pushed.
 #
-# Configure Trusted Publishing on PyPI (recommended — no long-lived token in this repo):
-#   https://docs.pypi.org/trusted-publishers/
+# The Python distribution `nbuv` is a uv workspace member under
+# `packages/nbuv/`. `uv build --package nbuv` from the repo root drives the
+# build; artifacts land in `./dist/`.
+#
+# Configure Trusted Publishing on PyPI (recommended — no long-lived token in
+# this repo): https://docs.pypi.org/trusted-publishers/
 # Project → Manage → Publishing → Add a new pending publisher → GitHub
 #   (workflow file: .github/workflows/pypi.yml, environment: pypi)
 #
@@ -70,9 +74,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends ninja-build patchelf
 
       - name: Build wheel
-        run: uv build --wheel
+        run: uv build --package nbuv --wheel
 
-      # PyPI rejects bare linux_x86_64; auditwheel retags to manylinux_* (PEP 600).
       - name: Repair Linux wheel (manylinux)
         if: runner.os == 'Linux'
         run: |
@@ -91,6 +94,9 @@ jobs:
   build-sdist:
     name: Source distribution
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,7 +112,7 @@ jobs:
           version: latest
 
       - name: Build sdist
-        run: uv build --sdist
+        run: uv build --package nbuv --sdist
 
       - uses: actions/upload-artifact@v4
         with:
@@ -118,10 +124,8 @@ jobs:
     name: Upload to PyPI
     needs: [build-wheel, build-sdist]
     runs-on: ubuntu-latest
-    # Skip prerelease-style tags (e.g. v1.0.0-rc.1); manual dispatch always runs.
     if: github.event_name == 'workflow_dispatch' || !contains(github.ref_name, '-')
     permissions:
-      # id-token: PyPI Trusted Publishing (OIDC). actions: download artifacts from this run.
       id-token: write
       contents: read
       actions: read
