@@ -17,8 +17,16 @@ permissions:
 
 jobs:
   test:
-    name: Ubuntu / uv + pytest + C++
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }} / uv + pytest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Ubuntu
+          - os: macos-15-intel
+            name: macOS (x86_64)
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
@@ -45,9 +53,3 @@ jobs:
         run: |
           uv sync --all-groups
           uv run pytest tests --verbose
-
-      - name: Configure and test C++ library
-        run: |
-          cmake -S libs/nbuv -B build-ci -DCMAKE_BUILD_TYPE=Release
-          cmake --build build-ci -j "$(nproc)"
-          ctest --test-dir build-ci --output-on-failure

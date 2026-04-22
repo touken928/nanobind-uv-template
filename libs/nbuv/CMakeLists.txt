@@ -11,17 +11,30 @@
 
 cmake_minimum_required(VERSION 3.15...3.30)
 
-if(NOT DEFINED PROJECT_NAME)
-  project(nbuv LANGUAGES CXX)
-  # Standalone build: pull in the shared options and enable tests by default.
-  set(NBUV_STANDALONE_LIB TRUE)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-  include(NBUVOptions)
+# Global defaults for this repo (also applied before bindings/ when loaded from root).
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-option(NBUV_BUILD_TESTS
-  "Build GoogleTest-based unit tests for the nbuv C++ library"
-  ${NBUV_STANDALONE_LIB})
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard")
+set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "")
+set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "")
+if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "")
+endif()
+
+function(nbuv_apply_warnings target)
+  if(MSVC)
+    target_compile_options(${target} PRIVATE /W4 /permissive-)
+  else()
+    target_compile_options(${target} PRIVATE
+      -Wall -Wextra -Wpedantic -Wshadow)
+  endif()
+endfunction()
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(nbuv LANGUAGES CXX)
+endif()
 
 add_library(nbuv STATIC
   src/math.cpp
@@ -39,13 +52,4 @@ set_target_properties(nbuv PROPERTIES
   POSITION_INDEPENDENT_CODE ON
 )
 
-if(COMMAND nbuv_apply_warnings)
-  nbuv_apply_warnings(nbuv)
-endif()
-
-if(NBUV_BUILD_TESTS)
-  include(CTest)
-  if(BUILD_TESTING)
-    add_subdirectory(tests)
-  endif()
-endif()
+nbuv_apply_warnings(nbuv)

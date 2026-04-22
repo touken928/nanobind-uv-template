@@ -1,213 +1,101 @@
 <h1 align="center">nanobind-uv-template</h1>
 
 <p align="center">
-  <strong>Batteries-included GitHub template for a Python package whose core is C++: <a href="https://nanobind.readthedocs.io/">nanobind</a>, <a href="https://cmake.org/">CMake</a>, <a href="https://docs.astral.sh/uv/">uv</a> — <code>libs/</code> holds the pure C++ library; the Python distribution (<code>nbuv</code>) sits at the repository root next to it.</strong>
+  <strong>GitHub template: C++ core + Python via <a href="https://nanobind.readthedocs.io/">nanobind</a>, <a href="https://cmake.org/">CMake</a>, <a href="https://docs.astral.sh/uv/">uv</a>. Pure C++ lives under <code>libs/</code>; the sample distribution <code>nbuv</code> is at the repo root.</strong>
 </p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12"></a>
   <a href="https://en.cppreference.com/w/cpp/17"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++17"></a>
   <a href="https://github.com/touken928/nanobind-uv-template/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/touken928/nanobind-uv-template/ci.yml?branch=main&logo=github&label=CI&style=for-the-badge" alt="CI"></a>
-  <a href="https://github.com/touken928/nanobind-uv-template/stargazers"><img src="https://img.shields.io/github/stars/touken928/nanobind-uv-template?style=for-the-badge&color=yellow&logo=github" alt="GitHub stars"></a>
 </p>
 
 <p align="center"><a href="README_zh.md">简体中文</a></p>
 
-The Python build backend is
-[`scikit-build-core`](https://scikit-build-core.readthedocs.io/); `uv` drives
-it transparently during `uv sync` / `uv build`.
+Build backend: [`scikit-build-core`](https://scikit-build-core.readthedocs.io/). Template repo: <https://github.com/touken928/nanobind-uv-template>.
 
-Template repository:
-<https://github.com/touken928/nanobind-uv-template>
-
-> `nanobind-uv-template` is only the **GitHub template's name**. The example
-> distribution is **`nbuv`**: package name on PyPI, import name, C++ namespace,
-> and CMake library target (`nbuv::nbuv`) all share it. Rename `nbuv` to
-> whatever you want after cloning.
+The example package **`nbuv`** is used everywhere (PyPI name, import, CMake target `nbuv::nbuv`). Rename it after cloning.
 
 ## Use this template
 
-1. Click **"Use this template" → "Create a new repository"** on GitHub, or
-   `git clone https://github.com/touken928/nanobind-uv-template my-pkg`.
-2. Rename the example project `nbuv` to your own name:
+1. **Use this template** on GitHub or `git clone … my-pkg`.
+2. Rename directories and fix references:
 
    ```bash
-   # rename on disk
    git mv libs/nbuv libs/<your_pkg>
    git mv src/nbuv src/<your_pkg>
-
-   # list every file that still references `nbuv`
    rg -l '\bnbuv\b'
    ```
-3. Update root `pyproject.toml`: `[project].name`, `[tool.scikit-build.wheel.packages]`,
-   `authors`, `urls`, `version`, and the `CMakeLists.txt` / C++ namespaces as needed.
-4. Run `uv sync` and you're off.
+
+3. Edit root `pyproject.toml` (`[project]`, `[tool.scikit-build.wheel.packages]`, URLs, version) and CMake / C++ names.
+4. `uv sync`.
 
 ## Layout
 
 ```
 nanobind-uv-template/
-├── pyproject.toml           # scikit-build-core + `[project]` (nbuv)
-├── CMakeLists.txt           # add_subdirectory(libs/nbuv) + bindings
-├── bindings/                # nanobind glue — nbuv._core
-│   ├── CMakeLists.txt
-│   └── _core.cpp
-├── src/nbuv/                # Python package (must match wheel.packages path tail)
-│   ├── __init__.py
-│   └── py.typed
-├── tests/                   # pytest
-│   └── test_basic.py
-│
-└── libs/
-    └── nbuv/                # nbuv::nbuv — pure C++17 library, Python-agnostic
-        ├── cmake/           # NBUVOptions, NBUVWarnings (CMake presets)
-        ├── CMakeLists.txt
-        ├── include/nbuv/
-        │   ├── math.hpp
-        │   └── greeter.hpp
-        ├── src/
-        │   ├── math.cpp
-        │   └── greeter.cpp
-        └── tests/           # GoogleTest unit tests (FetchContent, ctest-ready)
+├── pyproject.toml
+├── CMakeLists.txt
+├── bindings/           # nanobind → nbuv._core
+├── src/nbuv/
+├── tests/
+└── libs/nbuv/          # nbuv::nbuv (C++ only)
+    ├── CMakeLists.txt
+    ├── include/nbuv/
+    └── src/
 ```
 
-Dependencies flow one way: `libs/nbuv` ← `bindings/` ← `src/nbuv/`.
+Flow: `libs/nbuv` ← `bindings/` ← `src/nbuv`. The wheel package path tail must match the distribution name (`nbuv = src/nbuv`).
 
-- **`libs/nbuv/`** holds all business logic in plain C++17. It has no knowledge
-  of Python and can be reused by any other CMake project via `add_subdirectory`
-  (target `nbuv::nbuv`).
-- **`bindings/`** is intentionally thin: `#include` the `nbuv/*.hpp` headers and
-  call `m.def(...)` / `nb::class_<...>(...)` — no logic.
-- **`src/nbuv/`** holds the importable package: `__init__.py` re-exports `_core`.
-  `scikit-build-core` expects the wheel package folder name (last path segment in
-  `[tool.scikit-build.wheel.packages]`) to match the distribution / import name —
-  here `nbuv = src/nbuv`.
+## Prerequisites
 
-## Requirements
+C++17, CMake 3.15+, [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-- C++17 compiler (Clang 8+ / GCC 8+ / MSVC 2019+)
-- CMake 3.15+ (fetched automatically by `scikit-build-core` if missing)
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-
-## Quick start — Python
+## Python
 
 ```bash
-# 1. Create the venv, compile the extension, install in editable mode.
 uv sync
-
-# 2. Try it out.
-uv run python -c "import nbuv; print(nbuv.add(2, 3), nbuv.Greeter('uv').greet())"
-
-# 3. Run the Python test suite.
 uv run pytest tests
-
-# 4. Build wheel + sdist into ./dist/ (default for `uv build`).
-uv build
+uv build          # ./dist/
 ```
 
-Thanks to `[tool.uv] cache-keys` in `pyproject.toml`, changes
-under `libs/nbuv/**` / `bindings/**` (including `libs/nbuv/**/*.cmake`) automatically trigger a
-rebuild on the next `uv sync` / `uv run`.
+Changing `libs/nbuv/**` or `bindings/**` triggers a rebuild on the next `uv sync` (`[tool.uv]` cache-keys). Stable ABI wheel targets Python 3.12 (`requires-python` in `pyproject.toml`).
 
-The wheel is tagged `cp312-abi3` (Python stable ABI). Package metadata sets
-`requires-python == 3.12.*` in `pyproject.toml` — edit that field
-if you need a different Python range.
-
-## Quick start — C++ only
-
-Use `libs/nbuv/CMakeLists.txt` as the C++ entry point (library + GoogleTest):
+## C++ only
 
 ```bash
 cmake -S libs/nbuv -B build-nbuv
 cmake --build build-nbuv -j
-ctest --test-dir build-nbuv --output-on-failure
 ```
 
-Build options (append to the `cmake -S libs/nbuv ...` line, e.g.
-`-DNBUV_BUILD_TESTS=OFF`):
-
-- `NBUV_BUILD_TESTS` — build C++ unit tests under `libs/*/tests` (default `ON`).
-
-To consume the library from another CMake project:
-
 ```cmake
-add_subdirectory(path/to/nanobind-uv-template/libs/nbuv)
+add_subdirectory(path/to/.../libs/nbuv)
 target_link_libraries(my_app PRIVATE nbuv::nbuv)
 ```
 
-## Releasing
+## CI and releases
 
-Pushes and pull requests against `main` run
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) (`pytest` plus C++ tests).
-Pushing a `v*` tag runs two workflows in parallel:
-
-| Workflow | What it does |
-| -------- | -------------- |
-| `.github/workflows/ci.yml` | Validates `main` with Python and C++ tests. |
-| `.github/workflows/release.yml` | Builds wheels + sdist and attaches them to a GitHub Release. |
-| `.github/workflows/pypi.yml` | Builds wheels + sdist and uploads them to **PyPI** (`pip install nbuv`). |
-
-Configure [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/)
-once (GitHub workflow `pypi.yml`, environment `pypi`). On tag push, the PyPI
-job is skipped if the tag name contains `-` (treated as a pre-release). Use a
-[repository secret](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions)
-`PYPI_API_TOKEN` instead if you do not use Trusted Publishing — see the
-comments in `pypi.yml`.
+- **PR / push to `main`:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — `pytest` on Ubuntu and `macos-15-intel`.
+- **Tag `v*`:** [`.github/workflows/release.yml`](.github/workflows/release.yml) (GitHub Release artifacts) and [`.github/workflows/pypi.yml`](.github/workflows/pypi.yml) (PyPI). Configure [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) for `pypi.yml` / environment `pypi`, or use secret `PYPI_API_TOKEN` (see `pypi.yml`). Tags containing `-` skip the PyPI job (pre-release).
 
 ```bash
-uv version X.Y.Z             # bump version in pyproject.toml
+uv version X.Y.Z
 git commit -am "Release vX.Y.Z"
-git tag vX.Y.Z
-git push && git push --tags
+git tag vX.Y.Z && git push && git push --tags
 ```
 
-**From PyPI** (after a successful upload):
+Install: `pip install nbuv` from PyPI, or download wheels from [Releases](https://github.com/touken928/nanobind-uv-template/releases/latest).
 
-```bash
-pip install nbuv
-```
+## Extending
 
-**From GitHub Releases** — use a direct asset URL (copy the exact `.whl` name
-from the release; it embeds the version and platform tags):
+- C++: add sources under `libs/nbuv/`, list them in `add_library(nbuv …)`; test via `tests/`.
+- Python surface: `bindings/_core.cpp` + `src/nbuv/`.
+- Dependencies: `target_link_libraries(nbuv …)` / `uv add`.
 
-```bash
-pip install https://github.com/touken928/nanobind-uv-template/releases/latest/download/<wheel-file>
-```
+## Docs
 
-After each release, wheel filenames change with the version; check
-[Releases](https://github.com/touken928/nanobind-uv-template/releases/latest)
-if you install by URL.
-
-> Prefer **wheels** from PyPI/Releases (`pip install nbuv`). An **sdist** is also published; installing from it builds the extension from source and requires a C++ toolchain, CMake, and Ninja.
-
-## Extending the template
-
-- **Add C++ functionality**: put headers in `libs/nbuv/include/nbuv/` and
-  sources in `libs/nbuv/src/`, append them to `add_library(nbuv ...)`
-  in `libs/nbuv/CMakeLists.txt`, and add a `test_*.cpp` under
-  `libs/nbuv/tests/`.
-- **Expose it to Python**: add `m.def(...)` / `nb::class_<...>(...)` calls in
-  `bindings/_core.cpp`. The `from ._core import *` in
-  `__init__.py` picks them up automatically.
-- **Add pure-Python helpers**: drop them in
-  `src/nbuv/__init__.py` or new submodules beside it.
-- **Add another C++ library**: `mkdir libs/<name>` following `libs/nbuv/`, then
-  `add_subdirectory` it from your own top-level CMake project (or vendor it the
-  same way the repository root `CMakeLists.txt` pulls in `libs/nbuv`).
-- **Add a C++ dependency**: `find_package` / `FetchContent` in
-  `libs/nbuv/CMakeLists.txt`, then
-  `target_link_libraries(nbuv PRIVATE ...)`. The binding layer inherits
-  it transitively.
-- **Add a Python dependency**: `uv add <pkg>` / `uv add --dev <pkg>` at the
-  repository root (updates `pyproject.toml` and `[dependency-groups].dev`).
-
-## References
-
-- [nanobind documentation](https://nanobind.readthedocs.io/en/latest/)
-- [scikit-build-core documentation](https://scikit-build-core.readthedocs.io/)
-- [uv documentation](https://docs.astral.sh/uv/)
+[nanobind](https://nanobind.readthedocs.io/en/latest/) · [scikit-build-core](https://scikit-build-core.readthedocs.io/) · [uv](https://docs.astral.sh/uv/)
 
 ## License
 
-The **`nbuv`** distribution in this repository is licensed under the
-[Apache License, Version 2.0](LICENSE).
+Example distribution **nbuv**: [Apache-2.0](LICENSE).
